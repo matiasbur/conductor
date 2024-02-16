@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import com.netflix.conductor.common.metadata.tasks.PollData;
@@ -24,14 +25,14 @@ import com.netflix.conductor.dao.PollDataDAO;
 /** In-memory implementation of {@link PollDataDAO} which keeps the poll data locally in memory */
 public class MemoryPollDataDAO implements PollDataDAO {
 
-    private HashMap<String, HashMap<String, PollData>> pollData =
-            new HashMap<String, HashMap<String, PollData>>();
+    private ConcurrentHashMap<String, ConcurrentHashMap<String, PollData>> pollData =
+            new ConcurrentHashMap<String, ConcurrentHashMap<String, PollData>>();
 
     @Override
     public void updateLastPollData(String taskDefName, String domain, String workerId) {
-        HashMap<String, PollData> domainPollData = pollData.get(taskDefName);
+        ConcurrentHashMap<String, PollData> domainPollData = pollData.get(taskDefName);
         if (domainPollData == null) {
-            domainPollData = new HashMap<String, PollData>();
+            domainPollData = new ConcurrentHashMap<String, PollData>();
             pollData.put(taskDefName, domainPollData);
         }
         String domainKey = domain == null ? "DEFAULT" : domain;
@@ -41,7 +42,7 @@ public class MemoryPollDataDAO implements PollDataDAO {
 
     @Override
     public PollData getPollData(String taskDefName, String domain) {
-        HashMap<String, PollData> domainPollData = pollData.get(taskDefName);
+        ConcurrentHashMap<String, PollData> domainPollData = pollData.get(taskDefName);
         if (domainPollData == null) {
             return null;
         }
@@ -50,7 +51,7 @@ public class MemoryPollDataDAO implements PollDataDAO {
 
     @Override
     public List<PollData> getPollData(String taskDefName) {
-        HashMap<String, PollData> domainPollData = pollData.get(taskDefName);
+        ConcurrentHashMap<String, PollData> domainPollData = pollData.get(taskDefName);
         if (domainPollData == null) {
             return new ArrayList<PollData>();
         }
